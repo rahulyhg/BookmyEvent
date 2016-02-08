@@ -6,7 +6,7 @@ function test_capacity_form_alter(&$form, &$form_state, &$form_id) {
 	
 	$roles=$user->roles;
 
-	if($form_id == 'event_node_form' && in_array('administrator', $roles)){
+	if($form_id == 'event_node_form' && !in_array('administrator', $roles)){
 		$form['field_event_capacity']['#disabled']=TRUE;
 		$form['#validate'][]='test1';
 	}
