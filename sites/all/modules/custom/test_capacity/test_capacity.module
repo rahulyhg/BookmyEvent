@@ -1,0 +1,21 @@
+<?php
+function test_capacity_form_alter(&$form, &$form_state, &$form_id) {
+	global $user;
+	//dpm($form);
+	//dpm($form_id);
+	
+	$roles=$user->roles;
+
+	if($form_id == 'event_node_form' && in_array('administrator', $roles)){
+		$form['field_event_capacity']['#disabled']=TRUE;
+		$form['#validate'][]='test1';
+	}
+}
+
+function test1($form, &$form_state){
+	$lid=$form['field_l_id']['und']['#value'];
+	$node1=node_load($lid);
+	$abc=$node1->field_capacity['und'][0]['value'];
+	form_set_value($form['field_event_capacity']['und'][0]['value'],$abc,$form_state);
+}
+?>

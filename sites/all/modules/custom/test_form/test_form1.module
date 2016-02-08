@@ -1,0 +1,73 @@
+<?php
+
+function test_form1_form_alter(&$form, &$form_state, $form_id){
+ // dpm($form_id);
+  //dpm($form);
+
+  global $user;
+  //dpm($user);
+
+  $roles = $user->roles;
+  $a =in_array('administrator', $roles);
+  //dpm($a);
+
+  if($form_id=="event_register_node_form" && in_array('administrator', $roles)) {
+    $form['field_user_name']['und']['#default_value']=$user->uid;
+    $form['field_user_name']['und']['#disabled']= TRUE;
+
+
+    $eid = $form['field_e_id']['und']['#default_value'][0];
+    $node=node_load($eid);
+    $form['field_payment_amount']['und'][0]['value']['#default_value']=$node->field_price['und'][0]['value'];
+    $form['field_payment_amount']['und']['#disabled']= TRUE;
+    $abc1=$node->field_event_capacity['und'][0]['value'];
+    if($abc1>20)
+      drupal_set_message("remaining seats: ".$abc1);
+    elseif ($abc1<=20 && $abc1>0) {
+      drupal_set_message("HURRY!!!! remaining seats: ".$abc1);
+    }
+    else{
+      drupal_set_message("No Seats Available. SORRY!!! ");
+      $form['field_number_of_seats']['und']['#disabled']=TRUE;
+      $form['action']['submit']['#disabled']=TRUE;
+
+    }
+
+    
+    $form['#validate'][]='test';
+
+
+  }
+}
+
+/*function booking_form_alter(&$form, &$form_state, &$form_id){
+
+  if($form_id =="event_register_node_form" && in_array('administrator', &roles)){
+   $form['field_user_name']['und']['#default_value']=$user->uid;
+   $form['field_user_name']['und']['#disable']= TRUE;
+
+  }*/
+//}
+function test($form, &$form_state){
+  $ticket=intval($form['field_number_of_seats']['und'][0]['value']['#value']);
+  $price=intval($form['field_payment_amount']['und'][0]['value']['#default_value']);
+  $mul=$ticket*$price;
+  form_set_value($form['field_payment_amount']['und'][0]['value'],$mul,$form_state);
+  
+  $cid=$form['field_e_id']['und']['#default_value'][0];
+  $node2=node_load($cid);
+  $c=$node2->field_event_capacity['und'][0]['value'];
+  $node2->field_event_capacity['und'][0]['value']=$c-$ticket;
+  drupal_get_messages();
+  $cd=$node2->field_event_capacity['und'][0]['value'];
+
+  if($cd>=0){
+    drupal_set_message("remaining seats: ".$cd);
+    node_save($node2);
+  }
+  else{
+    form_set_error('');
+    drupal_set_message("No Seats Available. SORRY!!! ".$c);
+  }
+}
+?>
